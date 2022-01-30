@@ -37,10 +37,6 @@ type Event struct {
     Event string
 }
 
-type Commit struct {
-    Author User
-}
-
 type Pull struct {
     Number int
     HtmlUrl string `json:"html_url"`
@@ -210,30 +206,7 @@ func httpGet(url string) []byte {
 }
 
 // This loadX stuff is rather repetitive, is there a way to avoid duplicating
-// it for each of Commit, Pull and Event?
-func loadCommit(repo string, sha string) Commit {
-    var commit Commit
-
-    jsonFilename := fmt.Sprintf("cache/%s/commits/%s.json", repo, sha)
-    data, err := readCache(jsonFilename)
-    if err == nil {
-        json.Unmarshal(data, &commit)
-        return commit
-    }
-
-    url := fmt.Sprintf("https://api.github.com/repos/%s/commits/%s", repo, sha)
-    log.Printf("cache miss, reading %s from the wire", url)
-
-    body := httpGet(url)
-    writeCache(jsonFilename, body)
-
-    if err := json.Unmarshal(body, &commit); err != nil {
-        log.Fatalf("JSON unmarshalling failed: %s", err)
-    }
-
-    return commit
-}
-
+// it for each of Pull and Event?
 func loadEvents(repo string, issueNumber int) []Event {
     var events []Event
 
